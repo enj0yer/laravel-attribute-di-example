@@ -28,16 +28,16 @@ class AttributeInjectionServiceProvider extends ServiceProvider
                 $attributes = $property->getAttributes(Inject::class);
 
                 if (!empty($attributes)) {
-                    $this->injectDependency($object, $property, $app);
+                    $this->injectDependency($object, $property, $attributes[0], $app);
                 }
             }
         });
     }
 
-    private function injectDependency($object, ReflectionProperty $property, $app)
+    private function injectDependency($object, ReflectionProperty $property, $attribute, $app)
     {
         $property->setAccessible(true);
-        $dependencyClass = $property->getType()?->getName();
+        $dependencyClass = is_null($attribute->dependencyClass) ? $property->getType()?->getName() : $attribute->dependencyClass;
 
         if ($dependencyClass && $app->bound($dependencyClass)) {
             $property->setValue($object, $app->make($dependencyClass));
